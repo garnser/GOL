@@ -11,9 +11,6 @@ Wait...
 
 Once complete the LB will be at 192.168.10.10.
 
-Check that the LB is working:
-./verifylb.sh
-  100 node1
-  100 node2
-  100 node3
+Check that the LB is working ./verifylb.sh
+
 
