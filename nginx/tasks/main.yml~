@@ -1,0 +1,15 @@
+---
+ - name: Install nginx
+   apt: name=nginx state=installed
+
+ - name: Start nginx
+   service: name=nginx state=started enabled=yes
+
+ - name: Add default page
+   template: src=index.html.j2 dest=/var/www/html/index.html
+   when: inventory_hostname != 'lb'
+
+ - name: lb config
+   template: src=nginx.conf dest=/etc/nginx/sites-enabled/default
+   when: inventory_group == 'lbs'
+   notify: Restart nginx
