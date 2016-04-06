@@ -11,5 +11,5 @@
 
  - name: lb config
    template: src=nginx.conf dest=/etc/nginx/sites-enabled/default
-   when: inventory_group == 'lbs'
+   when: inventory_hostname == 'lb'
    notify: Restart nginx
