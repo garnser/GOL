@@ -41,18 +41,17 @@ fi
 
 if [[ $verify != "y" ]]; then echo "Aborting"; exit 1; fi
 
-echo "Generating config-file".
+echo "Generating config-files".
+
+echo "---" >> $hosts
 
 echo "[lbs]
 lb$l  ansible_ssh_host=192.168.10.10  ansible_ssh_user=vagrant  ansible_ssh_private_key_file=.vagrant/machines/lb$l/virtualbox/private_key" >> inventory
-echo "---" >> $hosts
-for l in `seq 1 $lbs`; do
-    echo "- name: lb$l
+echo "- name: lb
   group: \"[lbs]\"
   box: \"ubuntu/wily64\"
   ip: 192.168.10.10
 " >> $hosts
-done
 
 echo "[nodes]" >> inventory
 for n in `seq 1 $nodes`; do
