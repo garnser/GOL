@@ -2,6 +2,7 @@
 
 hosts=hosts.yml
 upstream=upstream.conf
+inventory=inventory
 
 if [ -e $hosts ]; then
     rm -f $hosts
@@ -9,12 +10,12 @@ fi
 if [ -e $upstream ]; then
     rm -f $upstream
 fi
+if [ -e $inventory ]; then
+    rm -f $inventory
+fi
 
 while getopts ":l:n:y" opt; do
     case $opt in
-      l)
-        lbs=$OPTARG
-	;;
       n)
         nodes=$OPTARG
 	;;
@@ -32,18 +33,13 @@ while getopts ":l:n:y" opt; do
      esac
 done
 
-if ! [[ $lbs =~ ^-?[0-9]+$ ]] || ! [[ $nodes =~ ^-?[0-9]+$ ]]; then
+if [[ $nodes =~ ^-?[0-9]+$ ]]; then
     echo "You've entered an invalid input value!"
     exit 1
 fi
 
-if [[ $lbs -gt 9 ]] || [[ $nodes -gt 9 ]]; then
-    echo "This script only supports adding 10 servers of each class";
-    exit 1
-fi
-
 if [[ $verify != "y" ]]; then
-    echo -n "Create a web-cluster with $lbs LBs and $nodes nodes? [y/n] "
+    echo -n "Create a web-cluster $nodes nodes? [y/n] "
     read verify
 fi
 
@@ -51,29 +47,30 @@ if [[ $verify != "y" ]]; then echo "Aborting"; exit 1; fi
 
 echo "Generating config-file".
 
+echo "[lbs]
+lb$l  ansible_ssh_host=192.168.10.10  ansible_ssh_user=vagrant  ansible_ssh_private_key_file=.vagrant/machines/lb$l/virtualbox/private_key" >> inventory
 echo "---" >> $hosts
 for l in `seq 1 $lbs`; do
-    ip=$(expr $l + 10)
     echo "- name: lb$l
   group: \"[lbs]\"
   box: \"ubuntu/wily64\"
-  ip: 192.168.10.$ip
+  ip: 192.168.10.10
 " >> $hosts
 done
 
-echo "upstream http {" >> $upstream
+echo "[nodes]" >> inventory
 for n in `seq 1 $nodes`; do
-    ip=$(expr $n + 20)
+    ip=$(expr $n + 10)
     echo "- name: node$n
   group: \"[nodes]\"
   box: \"ubuntu/wily64\"
   ip: 192.168.10.$ip
 " >> $hosts
-echo "server 192.168.10.$ip weight=5 max_fails=3 fail_timeout=10s;" >> $upstream
+echo "node$n  ansible_ssh_host=192.168.10.$ip  ansible_ssh_user=vagrant ansible_ssh_private_key_file=.vagrant/machines/node$n/virtualbox/private_key" >> inventory
 done
 echo "}" >> $upstream
 
 
 vagrant up
 vagrant reload --provision
-ANSIBLE_HOST_KEY_CHECKING=false ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null' ansible-playbook $1 -i inventory 
+ANSIBLE_HOST_KEY_CHECKING=false ANSIBLE_SSH_ARGS='-o UserKnownHostsFile=/dev/null' ansible-playbook nginx.yml -i inventory 

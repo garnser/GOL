@@ -1,0 +1,7 @@
+---
+ - name: Install nginx
+   hosts: all
+   user: vagrant
+   sudo: yes
+   roles:
+     - nginx
