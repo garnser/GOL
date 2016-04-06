@@ -2,10 +2,12 @@
 
 How to use:
 - Check out the full repo
-git clone https://github.com/garnser/GOL.git
+- Run the magic script
+```
 ./generate.sh -n 3 -y
 	      -n = no. web-nodes
 	      -y = Bypass verification
+```
 
 Wait...
 
