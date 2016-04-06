@@ -1,14 +1,10 @@
 #!/bin/bash
 
 hosts=hosts.yml
-upstream=upstream.conf
 inventory=inventory
 
 if [ -e $hosts ]; then
     rm -f $hosts
-fi
-if [ -e $upstream ]; then
-    rm -f $upstream
 fi
 if [ -e $inventory ]; then
     rm -f $inventory
@@ -33,7 +29,7 @@ while getopts ":l:n:y" opt; do
      esac
 done
 
-if [[ $nodes =~ ^-?[0-9]+$ ]]; then
+if ! [[ $nodes =~ ^-?[0-9]+$ ]]; then
     echo "You've entered an invalid input value!"
     exit 1
 fi
@@ -68,7 +64,6 @@ for n in `seq 1 $nodes`; do
 " >> $hosts
 echo "node$n  ansible_ssh_host=192.168.10.$ip  ansible_ssh_user=vagrant ansible_ssh_private_key_file=.vagrant/machines/node$n/virtualbox/private_key" >> inventory
 done
-echo "}" >> $upstream
 
 
 vagrant up
